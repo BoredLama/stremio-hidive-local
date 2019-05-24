@@ -479,6 +479,7 @@ async function retrieveRouter() {
 			if (!videoKey)
 				videoKey = episodes[args.id.replace('_movie', '').replace('_ova', '')]
 			if (videoKey) {
+				const proxyHeaders = { origin: 'https://www.hidive.com', referer: 'https://www.hidive.com/' }
 				let id = args.id.replace(defaults.prefix, '').split(':')[0]
 				if (id.includes('_'))
 					id = id.split('_')[1]
@@ -492,7 +493,7 @@ async function retrieveRouter() {
 					    subtitles[args.id] = []
 	                for (let key in ((videoData || {}).CaptionVttUrls || {})) {
 	                	subtitles[args.id].push({
-	                		url: videoData.CaptionVttUrls[key],
+	                		url: proxy.addProxy(videoData.CaptionVttUrls[key], { headers: proxyHeaders }),
 	                		lang: key || 'English'
 	                	})
 	                }
@@ -500,7 +501,6 @@ async function retrieveRouter() {
 	                for (let name in ((videoData || {}).VideoUrls || {})) {
 	                	const stream = videoData.VideoUrls[name]
 	                	for (let format in stream) {
-	                		const i = 0
 	                		stream[format].forEach(url => {
 	                			streamUrls.push({ title: name.split(', ').join(' | ') + ', ' + format.toUpperCase(), url })
 	                		})
@@ -522,7 +522,7 @@ async function retrieveRouter() {
 		                				} else if (typeof el == 'string') {
 		                					streams.push({
 		                						title: task.title + ' | ' + inf + 'p',
-		                						url: el
+		                						url: proxy.addProxy(el, { playlist: true, headers: proxyHeaders })
 		                					})
 		                				}
 		                			})
